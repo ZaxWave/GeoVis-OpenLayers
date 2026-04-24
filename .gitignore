@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.DS_Store
+public/tiles/
+public/data/xian.geojson
+public/data/xian.kml
+data/
+*.log
+*.env
+*.cache
+*.tmp
+*.bak
+*.swp
+*.swo
+*.swn

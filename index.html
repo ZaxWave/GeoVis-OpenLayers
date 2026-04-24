@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoVis · OpenLayers 地图平台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./src/style.css">
+</head>
+<body>
+
+<!-- ══ 主行：左栏 + 地图 + 右栏 ══════════════════════════════ -->
+<div id="main-row">
+
+    <!-- ─ 左侧栏：地图服务 ─────────────────────────────────── -->
+    <div id="sidebar">
+        <div id="sidebar-header">
+            <div class="side-logo">
+                <div class="logo-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="9" stroke="#4f8ef7" stroke-width="1.5"/>
+                        <path d="M12 3C12 3 8 8 8 12C8 16 12 21 12 21" stroke="#4f8ef7" stroke-width="1.5"/>
+                        <path d="M12 3C12 3 16 8 16 12C16 16 12 21 12 21" stroke="#4f8ef7" stroke-width="1.5"/>
+                        <path d="M3 12H21" stroke="#4f8ef7" stroke-width="1.5"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="logo-title">GeoVis</div>
+                    <div class="logo-sub">地图服务</div>
+                </div>
+            </div>
+            <button class="collapse-side-btn" onclick="toggleSidebar()" title="收起">
+                <svg viewBox="0 0 8 12" fill="none" width="7" height="11">
+                    <path d="M6 1L2 6l4 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- 底图 -->
+        <div class="section">
+            <div class="section-header">
+                <span class="section-dot dot-blue"></span><h3>底图切换</h3>
+                <span id="layer-label-text" class="section-badge"></span>
+            </div>
+            <div class="provider-row">
+                <div class="provider-tag"><span class="tag-dot" style="background:#f59e0b"></span>天地图</div>
+                <div class="btn-group">
+                    <button class="map-btn" data-layer="tdt_img" onclick="switchLayer(this,'tdt_img')"><span class="btn-icon">◉</span>影像</button>
+                    <button class="map-btn" data-layer="tdt_vec" onclick="switchLayer(this,'tdt_vec')"><span class="btn-icon">◈</span>矢量</button>
+                </div>
+            </div>
+            <div class="provider-row">
+                <div class="provider-tag"><span class="tag-dot" style="background:#10b981"></span>高德</div>
+                <div class="btn-group">
+                    <button class="map-btn" data-layer="gaode_img" onclick="switchLayer(this,'gaode_img')"><span class="btn-icon">◉</span>影像</button>
+                    <button class="map-btn" data-layer="gaode_vec" onclick="switchLayer(this,'gaode_vec')"><span class="btn-icon">◈</span>矢量</button>
+                </div>
+            </div>
+            <div class="provider-row">
+                <div class="provider-tag"><span class="tag-dot" style="background:#3b82f6"></span>百度</div>
+                <div class="btn-group">
+                    <button class="map-btn" data-layer="baidu_img" onclick="switchLayer(this,'baidu_img')"><span class="btn-icon">◉</span>影像</button>
+                    <button class="map-btn" data-layer="baidu_vec" onclick="switchLayer(this,'baidu_vec')"><span class="btn-icon">◈</span>矢量</button>
+                </div>
+            </div>
+            <div class="provider-row">
+                <div class="provider-tag"><span class="tag-dot" style="background:#f97316"></span>OSM</div>
+                <div class="btn-group">
+                    <button class="map-btn" data-layer="osm" onclick="switchLayer(this,'osm')"><span class="btn-icon">◈</span>标准</button>
+                </div>
+            </div>
+            <div class="provider-row">
+                <div class="provider-tag"><span class="tag-dot" style="background:#00b4d8"></span>Bing</div>
+                <div class="btn-group">
+                    <button class="map-btn" data-layer="bing_img" onclick="switchLayer(this,'bing_img')"><span class="btn-icon">◉</span>影像</button>
+                    <button class="map-btn" data-layer="bing_vec" onclick="switchLayer(this,'bing_vec')"><span class="btn-icon">◈</span>道路</button>
+                </div>
+            </div>
+            <div class="provider-row">
+                <div class="provider-tag"><span class="tag-dot" style="background:#ef4444"></span>Google</div>
+                <div class="btn-group">
+                    <button class="map-btn" data-layer="google_img" onclick="switchLayer(this,'google_img')"><span class="btn-icon">◉</span>影像</button>
+                    <button class="map-btn" data-layer="google_vec" onclick="switchLayer(this,'google_vec')"><span class="btn-icon">◈</span>矢量</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 本地矢量 -->
+        <div class="section">
+            <div class="section-header">
+                <span class="section-dot dot-teal"></span><h3>本地矢量数据</h3>
+            </div>
+            <div class="btn-group full">
+                <button class="map-btn local-btn" onclick="loadLocalLayer(this,'geojson')">GeoJSON</button>
+                <button class="map-btn local-btn" onclick="loadLocalLayer(this,'kml')">KML</button>
+            </div>
+            <div id="local-status" class="status-msg"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- POI -->
+        <div class="section">
+            <div class="section-header">
+                <span class="section-dot dot-orange"></span><h3>POI 搜索</h3>
+            </div>
+            <select id="poi-provider" class="gs-input" style="width:100%;margin-bottom:6px">
+                <option value="tianditu">天地图 POI</option>
+                <option value="gaode">高德 POI</option>
+                <option value="baidu">百度 POI</option>
+            </select>
+            <div class="input-row">
+                <input id="poi-keyword" class="gs-input" type="text" placeholder="输入关键词…"
+                       onkeydown="if(event.key==='Enter') searchPOI()"/>
+                <button class="action-btn" onclick="searchPOI()">搜索</button>
+            </div>
+            <div id="poi-results"></div>
+        </div>
+    </div><!-- /sidebar -->
+
+    <!-- ─ 地图区域 ─────────────────────────────────────────── -->
+    <div id="map">
+        <!-- Popup -->
+        <div id="popup" class="ol-popup">
+            <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+            <div id="popup-content"></div>
+        </div>
+
+        <!-- 标注输入框 Overlay -->
+        <div id="annotate-popup" class="annotate-popup">
+            <input id="annotate-text" type="text" placeholder="输入标注内容…" maxlength="40"
+                   onkeydown="if(event.key==='Enter') confirmAnnotation(); if(event.key==='Escape') cancelAnnotation()"/>
+            <div class="annotate-actions">
+                <button class="action-btn" onclick="confirmAnnotation()">确认</button>
+                <button class="cancel-btn" onclick="cancelAnnotation()">取消</button>
+            </div>
+        </div>
+
+        <!-- 侧栏收起时的复原标签 -->
+        <button class="map-reopen-tab left" id="sidebar-tab" onclick="toggleSidebar()" title="展开地图服务">
+            <svg viewBox="0 0 8 12" fill="none" width="7" height="11">
+                <path d="M2 1l4 5-4 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+        <button class="map-reopen-tab right" id="right-tab" onclick="toggleRight()" title="展开数据服务">
+            <svg viewBox="0 0 8 12" fill="none" width="7" height="11">
+                <path d="M6 1L2 6l4 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+
+        <!-- 状态栏 -->
+        <div id="map-statusbar">
+            <div id="mouse-position"></div>
+            <div id="scale-line"></div>
+            <div id="current-layer-label">
+                <span class="layer-dot"></span>
+                <span id="layer-label-status">天地图影像</span>
+            </div>
+        </div>
+    </div><!-- /map -->
+
+    <!-- ─ 右侧栏：数据服务 ─────────────────────────────────── -->
+    <div id="right-panel">
+        <div id="right-panel-header">
+            <button class="collapse-side-btn" onclick="toggleRight()" title="收起">
+                <svg viewBox="0 0 8 12" fill="none" width="7" height="11">
+                    <path d="M2 1l4 5-4 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <div class="right-hd-text">
+                <div class="panel-title">数据服务</div>
+                <div class="panel-sub">GeoServer · WFS · 瓦片</div>
+            </div>
+        </div>
+
+        <!-- GeoServer -->
+        <div class="section">
+            <div class="section-header">
+                <span class="section-dot dot-purple"></span><h3>GeoServer 服务</h3>
+            </div>
+            <div class="service-block">
+                <div class="service-label">WMS</div>
+                <div class="btn-group full">
+                    <button class="map-btn" onclick="loadGsWms(this,'img50m')">湖北省域</button>
+                    <button class="map-btn" onclick="loadGsWms(this,'img50g')">xian.shp</button>
+                </div>
+            </div>
+            <div class="service-block">
+                <div class="service-label">WMTS</div>
+                <div class="input-row">
+                    <input id="gs-wmts-layer" class="gs-input" placeholder="workspace:layer" value="lab5:xian"/>
+                    <button class="action-btn" onclick="loadGsWmts(this)">加载</button>
+                </div>
+            </div>
+            <div class="service-block">
+                <div class="service-label">WFS</div>
+                <div class="input-row">
+                    <input id="gs-wfs-layer" class="gs-input" placeholder="workspace:layer" value="lab5:xian"/>
+                    <button class="action-btn" onclick="loadGsWfs(this)">加载</button>
+                </div>
+            </div>
+            <div id="gs-status" class="status-msg"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Python WFS -->
+        <div class="section">
+            <div class="section-header">
+                <span class="section-dot" style="background:#22c55e;box-shadow:0 0 5px #22c55e66"></span>
+                <h3>Python WFS</h3>
+            </div>
+            <div class="service-block">
+                <div class="service-label">OGC WFS 1.1.0 · Flask · :5000</div>
+                <p class="service-hint"><code>python wfs_server.py</code></p>
+                <button class="action-btn outline full-w" onclick="togglePythonWfs(this)">GetFeature · xian.shp</button>
+            </div>
+            <div id="python-wfs-status" class="status-msg"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 瓦片服务 -->
+        <div class="section">
+            <div class="section-header">
+                <span class="section-dot" style="background:#818cf8;box-shadow:0 0 5px #818cf866"></span>
+                <h3>瓦片服务</h3>
+            </div>
+            <p class="service-hint" style="margin-bottom:4px"><code>python generate_tiles.py</code></p>
+            <div class="service-block">
+                <div class="service-label">栅格瓦片 · PNG / XYZ · Zoom 3–4</div>
+                <button class="action-btn outline full-w" onclick="toggleRasterTile(this)">加载 / 关闭</button>
+            </div>
+            <div class="service-block">
+                <div class="service-label">矢量瓦片 · MVT / PBF · Zoom 3–8</div>
+                <button class="action-btn outline full-w" onclick="toggleVectorTile(this)">加载 / 关闭</button>
+            </div>
+            <div id="tile-status" class="status-msg"></div>
+        </div>
+
+    </div><!-- /right-panel -->
+
+</div><!-- /main-row -->
+
+<!-- ══ 底部工具栏（全宽，可收起） ══════════════════════════════ -->
+<div id="tools-bar">
+    <div id="tools-hd" onclick="toggleTools()">
+        <div class="tools-icon">
+            <svg viewBox="0 0 14 14" fill="none" width="12" height="12">
+                <circle cx="7" cy="7" r="2.1" stroke="currentColor" stroke-width="1.3"/>
+                <path d="M7 1.5v1.7M7 10.8v1.7M1.5 7h1.7M10.8 7h1.7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                <path d="M3.15 3.15l1.2 1.2M9.65 9.65l1.2 1.2M3.15 10.85l1.2-1.2M9.65 4.35l1.2-1.2" stroke="currentColor" stroke-width="1.15" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <span class="tools-title">工具</span>
+        <div class="tools-pills">
+            <span class="tool-pill amber">无人机</span>
+            <span class="tool-pill teal">标注</span>
+            <span class="tool-pill violet">测量</span>
+        </div>
+        <svg class="tools-chevron" viewBox="0 0 10 6" fill="none">
+            <path d="M1 5L5 1l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </div>
+    <div id="tools-bd">
+        <div class="tools-cols">
+
+            <!-- 无人机 -->
+            <div class="tools-col">
+                <div class="col-hd">
+                    <span class="col-dot" style="background:#f59e0b"></span>
+                    <span class="col-title">无人机飞行</span>
+                </div>
+                <p class="card-desc">在地图上绘制多段线，无人机沿航线飞行</p>
+                <div class="btn-group full">
+                    <button class="action-btn outline" onclick="startDrawRoute()">绘制航线</button>
+                    <button class="action-btn" id="drone-fly-btn" onclick="toggleDrone()" disabled>开始飞行</button>
+                </div>
+                <button class="cancel-btn full-w" onclick="resetDrone()">重置</button>
+                <div id="drone-status" class="status-msg"></div>
+            </div>
+
+            <div class="col-sep"></div>
+
+            <!-- 标注 -->
+            <div class="tools-col">
+                <div class="col-hd">
+                    <span class="col-dot" style="background:#00cfa0"></span>
+                    <span class="col-title">地图标注</span>
+                </div>
+                <p class="card-desc">激活后点击地图任意位置添加文字标注</p>
+                <div class="btn-group full">
+                    <button class="action-btn outline" id="annotate-btn" onclick="toggleAnnotate(this)">标注模式</button>
+                    <button class="cancel-btn" onclick="clearAnnotations()">清除全部</button>
+                </div>
+                <div id="annotate-status" class="status-msg"></div>
+            </div>
+
+            <div class="col-sep"></div>
+
+            <!-- 测量 -->
+            <div class="tools-col">
+                <div class="col-hd">
+                    <span class="col-dot" style="background:#a78bfa"></span>
+                    <span class="col-title">测量工具</span>
+                </div>
+                <p class="card-desc">点击起点开始测量，双击结束</p>
+                <div class="btn-group full">
+                    <button class="action-btn outline" onclick="startMeasure(this,'LineString')">测距</button>
+                    <button class="action-btn outline" onclick="startMeasure(this,'Polygon')">测面积</button>
+                </div>
+                <button class="cancel-btn full-w" onclick="clearMeasure()">清除测量</button>
+                <div id="measure-status" class="status-msg"></div>
+            </div>
+
+        </div><!-- /tools-cols -->
+    </div>
+</div><!-- /tools-bar -->
+
+<script>
+const _sidebar   = () => document.getElementById('sidebar');
+const _right     = () => document.getElementById('right-panel');
+const _sideTab   = () => document.getElementById('sidebar-tab');
+const _rightTab  = () => document.getElementById('right-tab');
+
+window.toggleSidebar = function() {
+    const open = _sidebar().classList.toggle('collapsed');
+    _sideTab().classList.toggle('visible', open);
+};
+window.toggleRight = function() {
+    const open = _right().classList.toggle('collapsed');
+    _rightTab().classList.toggle('visible', open);
+};
+window.toggleTools = function() {
+    document.getElementById('tools-bar').classList.toggle('expanded');
+    // 工具栏展开/收起改变地图容器高度，通知 OL 重新计算尺寸
+    setTimeout(() => window._olMap?.updateSize(), 350);
+};
+window.togglePanel = window.toggleTools; // alias kept for safety
+</script>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
