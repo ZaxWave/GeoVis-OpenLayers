@@ -4,6 +4,7 @@ dist/
 public/tiles/
 public/data/xian.geojson
 public/data/xian.kml
+ol-env/
 data/
 *.log
 *.env
