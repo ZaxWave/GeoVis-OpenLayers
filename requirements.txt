@@ -1,0 +1,9 @@
+ol>=10.9.0
+fiona
+shapely
+mercantile
+mapbox-vector-tile
+pillow
+pyproj
+flask
+flask-cors
